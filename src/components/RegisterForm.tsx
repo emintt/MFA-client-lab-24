@@ -5,22 +5,29 @@ import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { useForm } from '@/hooks/formHooks';
 import Setup2FA from './Setup2FA';
+import { use2FA, useUser } from '@/hooks/apiHooks';
 
 const RegisterForm = (props: { switchForm: () => void }) => {
   const [usernameAvailable, setUsernameAvailable] = useState<boolean>(true);
   const [emailAvailable, setEmailAvailable] = useState<boolean>(true);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+  const {postUser} = use2FA();
 
   const initValues = { username: '', password: '', email: '' };
 
-  // TODO: Define doRegister function
+  // Define doRegister function
   const doRegister = async () => {
     try {
-      // TODO: Check if username and email are available
-      // TODO: Call postUser function with inputs
-      // TODO: Set QR code URL from registerResponse
+      // Check if username and email are available
+      if (!usernameAvailable || !emailAvailable) {
+        return;
+      };
+      // Call postUser function with inputs (send to 2FAUTH server, serv responses with url link)
+      const registerResponse = await postUser(inputs);
+      // Set QR code URL from registerResponse
+      setQrCodeUrl(registerResponse.qrCodeUrl);
     } catch (error) {
-      // TODO: Handle and log the error
+      // Handle and log the error
       console.log((error as Error).message);
     }
   };
@@ -49,6 +56,7 @@ const RegisterForm = (props: { switchForm: () => void }) => {
       {
         // TODO: Render Setup2FA component with qrCodeUrl and switchForm function
       }
+      <Setup2FA qrCodeUrl={qrCodeUrl} switchForm={props.switchForm} />
       <form onSubmit={handleSubmit}>
         <CardHeader className="text-center">
           <h2 className="text-2xl font-bold">Register</h2>
